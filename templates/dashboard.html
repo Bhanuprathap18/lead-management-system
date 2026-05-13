@@ -8,111 +8,463 @@
 
     <title>Lead Dashboard</title>
 
-    <!-- Bootstrap CDN -->
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        body{
+            background:#f4f7fc;
+        }
+
+        .sidebar{
+            height:100vh;
+            background:#111827;
+            color:white;
+            padding:20px;
+            position:fixed;
+            width:240px;
+        }
+
+        .main-content{
+            margin-left:260px;
+            padding:30px;
+        }
+
+        .card-box{
+            border-radius:15px;
+            padding:25px;
+            color:white;
+            box-shadow:0px 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .table-container{
+            background:white;
+            border-radius:15px;
+            padding:20px;
+            box-shadow:0px 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .navbar-brand{
+            font-weight:bold;
+            font-size:24px;
+        }
+
+        .logout-btn{
+            text-decoration:none;
+        }
+
+    </style>
 
 </head>
 
-<body class="bg-light">
+<body>
 
-<div class="container mt-5">
+<!-- Sidebar -->
 
-    <div class="card shadow p-4">
+<div class="sidebar">
 
-        <div class="text-end mb-3">
+    <h3>Lead CRM</h3>
 
-    <a href="/" class="btn btn-secondary">
-        Back to Home
+    <hr>
+
+    <p>Dashboard</p>
+    <p>Analytics</p>
+    <p>Lead Tracking</p>
+
+    <button
+        class="btn btn-light mt-3"
+        data-bs-toggle="modal"
+        data-bs-target="#leadModal">
+
+        Add Lead
+
+    </button>
+
+    <br><br>
+
+    <a href="/logout" class="btn btn-danger logout-btn">
+
+        Logout
+
     </a>
 
 </div>
 
-        <!-- Search Form -->
-        <form method="GET" class="mb-4">
+<!-- Main Content -->
 
-            <div class="input-group">
+<div class="main-content">
 
-                <input
-                    type="text"
-                    name="search"
-                    class="form-control"
-                    placeholder="Search leads">
+    <!-- Navbar -->
 
-                <button class="btn btn-primary" type="submit">
-                    Search
+    <nav class="navbar navbar-light bg-white rounded shadow-sm mb-4 p-3">
+
+        <span class="navbar-brand">
+            Lead Management Dashboard
+        </span>
+
+    </nav>
+
+    <!-- Statistics Cards -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+
+            <div class="card-box bg-primary">
+
+                <h5>Total Leads</h5>
+
+                <h2>{{ leads|length }}</h2>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card-box bg-success">
+
+                <h5>Contacted Leads</h5>
+
+                <h2>
+
+                    {{ leads | selectattr('status', 'equalto', 'Contacted') | list | length }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card-box bg-danger">
+
+                <h5>Closed Leads</h5>
+
+                <h2>
+
+                    {{ leads | selectattr('status', 'equalto', 'Closed') | list | length }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Chart Section -->
+
+    <div class="table-container mb-4">
+
+        <canvas id="leadChart"></canvas>
+
+    </div>
+
+    <!-- Table Section -->
+
+    <div class="table-container">
+
+        <div class="d-flex justify-content-between mb-3">
+
+            <h4>Lead Records</h4>
+
+            <input
+                type="text"
+                id="searchInput"
+                class="form-control w-25"
+                placeholder="Search Leads">
+
+        </div>
+
+        <table class="table table-hover" id="leadTable">
+
+            <thead class="table-dark">
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Business</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for lead in leads %}
+
+                <tr>
+
+                    <td>{{ lead.id }}</td>
+                    <td>{{ lead.name }}</td>
+                    <td>{{ lead.email }}</td>
+                    <td>{{ lead.phone }}</td>
+                    <td>{{ lead.business_type }}</td>
+                    <td>{{ lead.status }}</td>
+
+                    <td>
+
+                        {{ lead.created_at.strftime('%d-%m-%Y %H:%M') }}
+
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="btn btn-success btn-sm"
+                            onclick="updateStatus(Number('{{ lead.id }}'), 'Contacted')">
+
+                            Contacted
+
+                        </button>
+
+                        <button
+                            class="btn btn-danger btn-sm"
+                            onclick="updateStatus(Number('{{ lead.id }}'), 'Closed')">
+
+                            Closed
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- Add Lead Modal -->
+
+<div class="modal fade"
+     id="leadModal"
+     tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    Add New Lead
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+
                 </button>
 
             </div>
 
-        </form>
+            <div class="modal-body">
 
-        <!-- Lead Table -->
-        <div class="table-responsive">
+                <form method="POST" action="/">
 
-            <table class="table table-bordered table-hover">
+                    <div class="mb-3">
 
-                <thead class="table-dark">
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            placeholder="Name"
+                            required>
 
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Business Type</th>
-                        <th>Message</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
+                    </div>
 
-                </thead>
+                    <div class="mb-3">
 
-                <tbody>
+                        <input
+                            type="email"
+                            name="email"
+                            class="form-control"
+                            placeholder="Email"
+                            required>
 
-                    {% for lead in leads %}
+                    </div>
 
-                    <tr>
+                    <div class="mb-3">
 
-                        <td>{{ lead.id }}</td>
-                        <td>{{ lead.name }}</td>
-                        <td>{{ lead.email }}</td>
-                        <td>{{ lead.phone }}</td>
-                        <td>{{ lead.business_type }}</td>
-                        <td>{{ lead.message }}</td>
-                        <td>{{ lead.status }}</td>
+                        <input
+                            type="text"
+                            name="phone"
+                            class="form-control"
+                            placeholder="Phone"
+                            required>
 
-                        <td>
+                    </div>
 
-                            <a href="/update_status/{{ lead.id }}/Contacted">
+                    <div class="mb-3">
 
-                                <button class="btn btn-success btn-sm">
-                                    Contacted
-                                </button>
+                        <input
+                            type="text"
+                            name="business_type"
+                            class="form-control"
+                            placeholder="Business Type">
 
-                            </a>
+                    </div>
 
-                            <a href="/update_status/{{ lead.id }}/Closed">
+                    <div class="mb-3">
 
-                                <button class="btn btn-danger btn-sm">
-                                    Closed
-                                </button>
+                        <textarea
+                            name="message"
+                            class="form-control"
+                            placeholder="Message">
 
-                            </a>
+                        </textarea>
 
-                        </td>
+                    </div>
 
-                    </tr>
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100">
 
-                    {% endfor %}
+                        Save Lead
 
-                </tbody>
+                    </button>
 
-            </table>
+                </form>
+
+            </div>
 
         </div>
 
     </div>
 
 </div>
+
+<!-- JavaScript -->
+
+<script>
+
+    // Update Lead Status API
+
+    async function updateStatus(id, status){
+
+        const response = await fetch('/api/update_status', {
+
+            method: 'POST',
+
+            headers: {
+                'Content-Type': 'application/json'
+            },
+
+            body: JSON.stringify({
+                id: id,
+                status: status
+            })
+
+        });
+
+        const result = await response.json();
+
+        if(result.success){
+
+            location.reload();
+
+        }
+
+    }
+
+    // Search Functionality
+
+    const searchInput = document.getElementById("searchInput");
+
+    searchInput.addEventListener("keyup", function(){
+
+        let filter = searchInput.value.toLowerCase();
+
+        let rows = document.querySelectorAll("#leadTable tbody tr");
+
+        rows.forEach(row => {
+
+            let text = row.innerText.toLowerCase();
+
+            row.style.display = text.includes(filter)
+                ? ""
+                : "none";
+
+        });
+
+    });
+
+    // Chart Section
+
+    const ctx = document.getElementById('leadChart');
+
+    new Chart(ctx, {
+
+        type: 'bar',
+
+        data: {
+
+            labels: ['Total', 'Contacted', 'Closed'],
+
+            datasets: [{
+
+                label: 'Lead Statistics',
+
+                data: [
+
+                    Number("{{ leads|length }}"),
+
+                    Number("{{ leads | selectattr('status', 'equalto', 'Contacted') | list | length }}"),
+
+                    Number("{{ leads | selectattr('status', 'equalto', 'Closed') | list | length }}")
+
+                ],
+
+                borderWidth: 1
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            scales: {
+
+                y: {
+
+                    beginAtZero: true
+
+                }
+
+            }
+
+        }
+
+    });
+
+</script>
+
+<!-- Bootstrap JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

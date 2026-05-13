@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session, url_for
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.secret_key = "supersecretkey"
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leads.db'
@@ -18,9 +20,31 @@ class Lead(db.Model):
     business_type = db.Column(db.String(100))
     message = db.Column(db.Text)
     status = db.Column(db.String(20), default='New')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 # Home route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+
+    error = None
+
+    if request.method == 'POST':
+
+        username = request.form['username']
+        password = request.form['password']
+
+        if username == 'admin' and password == 'admin123':
+
+            session['user'] = username
+
+            return redirect('/dashboard')
+
+        else:
+
+            error = "Invalid Username or Password"
+
+    return render_template('login.html', error=error)
 @app.route('/', methods=['GET', 'POST'])
 def home():
 
@@ -60,6 +84,10 @@ def home():
 @app.route('/dashboard')
 def dashboard():
 
+    if 'user' not in session:
+
+        return redirect('/login')
+
     search = request.args.get('search')
 
     if search:
@@ -77,19 +105,39 @@ def dashboard():
 
 
 # Update lead status
-@app.route('/update_status/<int:id>/<status>')
-def update_status(id, status):
+@app.route('/api/update_status', methods=['POST'])
+def api_update_status():
 
-    lead = Lead.query.get(id)
+    data = request.get_json()
 
-    lead.status = status
+    lead_id = data.get('id')
+    status = data.get('status')
 
-    db.session.commit()
+    lead = Lead.query.get(lead_id)
 
-    return redirect('/dashboard')
+    if lead:
+
+        lead.status = status
+
+        db.session.commit()
+
+        return {
+            "success": True,
+            "message": "Status updated successfully"
+        }
+
+    return {
+        "success": False
+    }
 
 
 # Run app
+@app.route('/logout')
+def logout():
+
+    session.pop('user', None)
+
+    return redirect('/login')
 if __name__ == '__main__':
 
     with app.app_context():
