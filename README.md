@@ -1,69 +1,79 @@
-# Lead Management System
+# Lead Management CRM Dashboard
 
-A Flask-based Lead Management System developed using Python, Flask, SQLite, SQLAlchemy, HTML, CSS, and Bootstrap.
+A modern Full-Stack Lead Management CRM Dashboard developed using Flask, SQLite, SQLAlchemy, Bootstrap, JavaScript, and Chart.js.
 
-## Features
+The system allows businesses to manage customer leads efficiently through a secure dashboard with analytics, lead tracking, authentication, and dynamic status management.
 
-- Lead submission form
-- SQLite database integration
-- Dashboard to view leads
-- Search functionality
-- Lead status updates
+---
+
+# Features
+
+- User Authentication (Login/Logout)
+- Lead Creation & Management
+- Dashboard Analytics
+- Dynamic Charts using Chart.js
+- Search Functionality
+- Lead Status Tracking
+- REST API based Status Updates
+- SQLite Database Integration
 - Responsive Bootstrap UI
-- Success alert system
+- Timestamp Tracking
+- Modal-based Lead Creation
 
-## Tech Stack
+---
 
+# Tech Stack
+
+## Frontend
+- HTML5
+- CSS3
+- Bootstrap 5
+- JavaScript
+- Chart.js
+
+## Backend
 - Python
 - Flask
-- SQLite
 - SQLAlchemy
-- HTML/CSS
-- Bootstrap
 
-## Project Structure
+## Database
+- SQLite
+
+---
+
+# Project Architecture
+
+User Interface (HTML/CSS/JS)
+↓
+Flask Backend
+↓
+SQLAlchemy ORM
+↓
+SQLite Database
+
+---
+
+# Folder Structure
 
 lead-management-system/
 │
 ├── app.py
 ├── requirements.txt
+├── README.md
+│
 ├── templates/
+│   ├── login.html
 │   ├── index.html
 │   └── dashboard.html
+│
+├── instance/
+│   └── leads.db
 
-## Installation
+---
 
-1. Clone repository
+# Installation & Setup
 
-```bash
-git clone <repository-url>
-git clone <repository-url>
-```
-
-2. Create virtual environment
+## 1. Clone Repository
 
 ```bash
-python -m venv venv
-```
-
-3. Activate virtual environment
-
-```bash
-venv\Scripts\activate
-```
-
-4. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-5. Run application
-
-```bash
-python app.py
-```
-
-## Author
-
-Bhanu Prathap Reddy Marella
+git clone https://github.com/Bhanuprathap18/lead-management-system.git
